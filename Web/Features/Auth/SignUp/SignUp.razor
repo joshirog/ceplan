@@ -1,0 +1,98 @@
+@page "/account/signup"
+@inherits SignUpBase
+
+<EditForm Model="Model" OnValidSubmit="HandleSignup">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label>Usuario</label>
+        <div class="input-with-icon">
+            <span class="icon user-icon"></span>
+            <InputText @bind-Value="Model.UserName" class="form-control" />
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Tipo Documento</label>
+        <InputSelect @bind-Value="Model.DocumentType" class="form-control">
+            <option value="">-- Seleccione --</option>
+            <option value="DNI">DNI</option>
+            <option value="CE">CE</option>
+        </InputSelect>
+    </div>
+
+    <div class="form-group">
+        <label>Nombre</label>
+        <InputText @bind-Value="Model.Name" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label>Apellido Paterno</label>
+        <InputText @bind-Value="Model.FirstName" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label>Apellido Materno</label>
+        <InputText @bind-Value="Model.LastName" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label>Correo</label>
+        <InputText @bind-Value="Model.Email" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label>Celular</label>
+        <InputText @bind-Value="Model.PhoneNumber" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label>Contraseña</label>
+        <div class="input-with-icon">
+            <span class="icon lock-icon"></span>
+            <InputText @bind-Value="Model.Password" type="password" class="form-control" />
+            <span class="icon eye-icon"></span>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Confirmar Contraseña</label>
+        <InputText @bind-Value="Model.ConfirmPassword" type="password" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <a href="/account/signin" class="forgot-password-link">¿Ingresar?</a>
+    </div>
+
+    <button class="btn btn-primary w-100" type="submit">Registrarse</button>
+</EditForm>
+
+@if (!Success)
+{
+    <div class="alert alert-danger mt-4">
+        @ErrorMessage
+        <ul class="mb-0 mt-3">
+            @if (Errors != null && Errors.Any())
+            {
+                @foreach (var err in Errors)
+                {
+                    <li>@err</li>
+                }
+            }
+        </ul>
+    </div>
+}
+
+<br>
+
+<div class="support-box">
+    <span>¿Necesita ayuda?, <a href="/soporte">contacte con el área de soporte.</a></span>
+</div>
+
+
+<style>
+    .form-group {
+        margin-bottom: 0.7rem;
+    }
+</style>

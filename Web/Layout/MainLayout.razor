@@ -1,0 +1,145 @@
+﻿@inherits LayoutComponentBase
+@using Microsoft.JSInterop
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+
+@code {
+    private string currentPath;
+}
+
+@implements IDisposable
+
+<div class="auth-layout">
+    <div class="auth-header d-flex justify-content-between align-items-center">
+        <div class="header-brand">
+            <!-- Puedes mantener tu logo o título aquí -->
+        </div>
+        @if (IsLoggedIn && 
+             !currentPath.StartsWith("account/signin", StringComparison.OrdinalIgnoreCase) &&
+             !currentPath.StartsWith("account/confirm", StringComparison.OrdinalIgnoreCase) &&
+             !currentPath.StartsWith("account/signup", StringComparison.OrdinalIgnoreCase))
+        {
+            <button class="btn btn-link text-white" @onclick="Logout">Cerrar sesión</button>
+        }
+    </div>
+
+    <div class="auth-content">
+        <div class="auth-form-container">
+            @Body
+            
+            @* ──────────────────────────────────────────── *@
+            @* Popup de aviso de inactividad *@
+            @if (IsLoggedIn && showWarning)
+            {
+                <div class="modal-backdrop fade show"></div>
+                <div class="modal d-block" tabindex="-1">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Su sesión está a punto de expirar</h5>
+                            </div>
+                            <div class="modal-body">
+                                <p>Por seguridad, su sesión expirará en <strong>@remainingSeconds</strong> segundos.</p>
+                                <p>Para continuar, seleccione "Extender sesión".</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn btn-primary"  @onclick="ExtendSession">Extender sesión</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            @* ──────────────────────────────────────────── *@
+        </div>
+    </div>
+
+    <div class="auth-footer">
+        <div class="footer-content">
+            <img src="btn_logo.png" alt="Logo Perú" />
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool IsLoggedIn;
+    private bool showWarning;
+    private int remainingSeconds;
+    private DotNetObjectReference<MainLayout> dotNetRef;
+    private System.Threading.Timer countdown;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var token = await JS.InvokeAsync<string>("localStorage.getItem", "authToken");
+        IsLoggedIn = !string.IsNullOrEmpty(token);
+        Navigation.LocationChanged += OnLocationChanged;
+        currentPath = Navigation.ToBaseRelativePath(Navigation.Uri);
+    }
+
+    private async void OnLocationChanged(object sender, LocationChangedEventArgs args)
+    {
+        var token = await JS.InvokeAsync<string>("localStorage.getItem", "authToken");
+        IsLoggedIn = !string.IsNullOrEmpty(token);
+        currentPath = Navigation.ToBaseRelativePath(args.Location);
+        StateHasChanged();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            dotNetRef = DotNetObjectReference.Create(this);
+            // Inicia detección de inactividad tras 20 segundos
+            JS.InvokeVoidAsync("idleTimer.init", dotNetRef, 20);
+        }
+    }
+
+    [JSInvokable]
+    public void ShowIdleWarning()
+    {
+        remainingSeconds = 5; // duración de la cuenta atrás
+        showWarning = true;
+        // Inicia temporizador de cuenta atrás en C#
+        countdown = new System.Threading.Timer(_ =>
+        {
+            if (remainingSeconds > 0)
+            {
+                remainingSeconds--;
+                InvokeAsync(StateHasChanged);
+            }
+            else
+            {
+                countdown.Dispose();
+                InvokeAsync(Logout);
+            }
+        }, null, 0, 1000);
+        InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ExtendSession()
+    {
+        // Oculta modal y reinicia temporizadores
+        showWarning = false;
+        countdown?.Dispose();
+        StateHasChanged();
+
+        // Opcional: hacer ping al backend para extender sesión
+        // await HttpClient.GetAsync("/api/auth/keepalive");
+
+        // Reinicia detección de inactividad
+        JS.InvokeVoidAsync("idleTimer.init", dotNetRef, 20);
+    }
+
+    private async Task Logout()
+    {
+        countdown?.Dispose();
+        await JS.InvokeVoidAsync("localStorage.removeItem", "authToken");
+        Navigation.NavigateTo("/account/signin", forceLoad: true);
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= OnLocationChanged;
+        dotNetRef?.Dispose();
+        countdown?.Dispose();
+    }
+}

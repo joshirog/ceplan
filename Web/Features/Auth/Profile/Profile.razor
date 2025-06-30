@@ -1,0 +1,62 @@
+@page "/profile"
+@inherits ProfileBase
+@using Web.Features.Auth.Profile
+
+@if (Model == null)
+{
+    <p>Cargando perfil...</p>
+}
+else
+{
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <div class="d-flex align-items-center mb-4">
+          <img src="icon-192.png" class="rounded-circle" style="width:80px;height:80px;" alt="Avatar" />
+          <div class="ml-5">
+            <h4 class="mb-1 ml-4">@Model.name @Model.firstName @Model.lastName</h4>
+            <span class="badge bg-success ml-4">Activo</span>
+            <div class="text-muted ml-4">Role: @Model.role?.name</div>
+          </div>
+        </div>
+
+        <h5 class="mb-3">Información Básica</h5>
+        <div class="row">
+          @* First Name *@
+          <div class="col-md-12 mb-3">
+            <label class="form-label">Nombres</label>
+            <input readonly class="form-control-plaintext bg-light border rounded p-2" value="@Model.name" />
+          </div>
+          @* Last Name *@
+          <div class="col-md-12 mb-3">
+            <label class="form-label">Primer Apellido</label>
+            <input readonly class="form-control-plaintext bg-light border rounded p-2" value="@Model.firstName" />
+          </div>
+          @* Second Last Name *@
+          <div class="col-md-12 mb-3">
+            <label class="form-label">Segundo Apellido</label>
+            <input readonly class="form-control-plaintext bg-light border rounded p-2" value="@Model.lastName" />
+          </div>
+          @* Document Type *@
+          <div class="col-md-12 mb-3">
+            <label class="form-label">Tipo de Documento</label>
+            <input readonly class="form-control-plaintext bg-light border rounded p-2" value="@Model.documentType" />
+          </div>
+          @* Document Number *@
+          <div class="col-md-12 dd mb-3">
+            <label class="form-label">N° Documento</label>
+            <input readonly class="form-control-plaintext bg-light border rounded p-2" value="@Model.userName" />
+          </div>
+          @* Email *@
+          <div class="col-md-12 mb-3">
+            <label class="form-label">Correo electrónico</label>
+            <input readonly class="form-control-plaintext bg-light border rounded p-2" value="@Model.email" />
+          </div>
+          @* Phone *@
+          <div class="col-md-12 mb-3">
+            <label class="form-label">Teléfono Móvil</label>
+            <input readonly class="form-control-plaintext bg-light border rounded p-2" value="@Model.phoneNumber" />
+          </div>
+        </div>
+      </div>
+    </div>
+}

@@ -1,0 +1,55 @@
+@page "/"
+@page "/account/signin"
+@inherits SignInBase
+
+
+<h3 class="text-center">Iniciar sesión</h3>
+
+<EditForm Model="Model" OnValidSubmit="HandleLogin">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label>Usuario</label>
+        <InputText @bind-Value="Model.UserName" class="form-control" />
+    </div>
+
+    <div class="form-group mar">
+        <label>Contraseña</label>
+        <InputText @bind-Value="Model.Password" type="password" class="form-control" />
+    </div>
+
+    @if (!Success)
+    {
+        <div class="alert alert-danger mt-4">
+            @ErrorMessage
+            <ul class="mb-0 mt-3">
+                @if (Errors != null && Errors.Any())
+                {
+                    @foreach (var err in Errors)
+                    {
+                        <li>@err</li>
+                    }
+                }
+            </ul>
+        </div>
+    }
+
+    <button type="submit" class="btn btn-primary w-100" disabled="@Loading">
+        @(Loading ? "Ingresando..." : "Iniciar sesión")
+    </button>
+</EditForm>
+
+<div class="text-center mt-3">
+    <a href="/account/signup">¿Olvidaste tu contraseña?</a>
+</div>
+
+<div class="text-center mt-2">
+    <a href="/account/signup">¿No tienes cuenta? Registrarme</a>
+</div>
+
+<style>
+    .form-group {
+        margin-bottom: 0.7rem;
+    }
+</style>

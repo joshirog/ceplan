@@ -1,0 +1,47 @@
+﻿@using Web.Features.Auth.Profile
+@using System
+@inject NavigationManager Navigation
+@inject IProfileService ProfileService
+
+<Router AppAssembly="typeof(Program).Assembly" OnNavigateAsync="OnNavigateAsync">
+    <Found Context="routeData">
+        <RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <LayoutView Layout="typeof(MainLayout)">
+            <p>Sorry, there's nothing at this address.</p>
+        </LayoutView>
+    </NotFound>
+</Router>
+
+@code {
+    private async Task OnNavigateAsync(NavigationContext args)
+    {
+        // Allow unauthenticated access to the root (empty path), signin and signup routes
+        if (string.IsNullOrWhiteSpace(args.Path) ||
+            args.Path.StartsWith("account/signin",  StringComparison.OrdinalIgnoreCase) ||
+            args.Path.StartsWith("account/signup",  StringComparison.OrdinalIgnoreCase) ||
+            args.Path.StartsWith("account/confirm", StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        // Attempt to fetch the user profile; treat any failure or null as unauthenticated
+        ProfileResponse perfil = null;
+        try
+        {
+            perfil = await ProfileService.Invoke();
+        }
+        catch
+        {
+            // ignore errors (e.g., no token)
+        }
+
+        // If no profile, redirect to login
+        if (perfil == null)
+        {
+            Navigation.NavigateTo("/account/signin", forceLoad: true);
+        }
+    }
+}
